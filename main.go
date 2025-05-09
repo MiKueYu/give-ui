@@ -4,9 +4,9 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"log"
 	"net/http"
 	"runtime"
+	giveLogger "spt-give-ui/backend/logger"
 
 	"github.com/tidwall/gjson"
 	"github.com/wailsapp/wails/v2"
@@ -17,9 +17,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	runtimeWails "github.com/wailsapp/wails/v2/pkg/runtime"
-	"net/http"
-	"runtime"
-	giveLogger "spt-give-ui/backend/logger"
 )
 
 //go:embed all:frontend/dist components
@@ -138,7 +135,7 @@ func (a *App) makeMenu() {
 	} else {
 		a.settingsMenu.Append(menu.Text("使用默认缓存文件夹", nil, a.clearCacheFolder))
 	}
-	a.settingsMenu.Append(menu.Radio("Load images from cache", a.config.GetUseCache(), nil, a.toggleUseCache))
+	a.settingsMenu.Append(menu.Radio("从缓存加载图片", a.config.GetUseCache(), nil, a.toggleUseCache))
 }
 
 func addRadio(label string, selected string, click menu.Callback) *menu.MenuItem {
