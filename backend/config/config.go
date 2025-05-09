@@ -12,12 +12,14 @@ const (
 )
 
 type Config struct {
-	errorLogger   *logger.ErrorFileLogger
-	locale        string
-	theme         string
-	sptUrl        string
-	cacheFolder   string
-	favoriteItems []string
+	errorLogger   *logger.FileLogger
+	locale         string
+	theme          string
+	sptUrl         string
+	cacheFolder    string
+	favoriteItems  []string
+	useCache      bool
+	timeoutSeconds uint16
 }
 
 func LoadConfig() *Config {
@@ -26,18 +28,22 @@ func LoadConfig() *Config {
 		Locale:        "Chinese",
 		Theme:         defaultTheme,
 		SptUrl:        "https://127.0.0.1:6969",
-		CacheFolder:   "",
-		FavoriteItems: []string{},
+		CacheFolder:    "",
+		FavoriteItems:  []string{},
+		IgnoreCache:   false,
+		TimeoutSeconds: 10,
 	}
 	jsonConfig := store.CreateDatabase(defaultJsonConfig)
 	return &Config{
 		errorLogger: errorLogger,
 		//db:          db,
-		locale:        jsonConfig.Locale,
-		theme:         jsonConfig.Theme,
-		sptUrl:        jsonConfig.SptUrl,
-		favoriteItems: jsonConfig.FavoriteItems,
-		cacheFolder:   jsonConfig.CacheFolder,
+		locale:         jsonConfig.Locale,
+		theme:          jsonConfig.Theme,
+		sptUrl:         jsonConfig.SptUrl,
+		favoriteItems:  jsonConfig.FavoriteItems,
+		cacheFolder:    jsonConfig.CacheFolder,
+		useCache:      !jsonConfig.IgnoreCache,
+		timeoutSeconds: jsonConfig.TimeoutSeconds,
 	}
 }
 
@@ -99,6 +105,19 @@ func (c *Config) GetCacheFolder() string {
 func (c *Config) SetCacheFolder(folder string) {
 	c.cacheFolder = folder
 	store.SaveValue(store.CacheFolderDbKey, folder)
+}
+
+func (c *Config) GetUseCache() bool {
+	return c.useCache
+}
+
+func (c *Config) SetUseCache(cache bool) {
+	c.useCache = cache
+	store.SaveValue(store.IgnoreCacheDbKey, !cache)
+}
+
+func (c *Config) GetTimeoutSeconds() uint16 {
+	return c.timeoutSeconds
 }
 
 func (c *Config) Close() error {
