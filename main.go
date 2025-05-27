@@ -57,14 +57,15 @@ func main() {
 				return r
 			},
 		},
-		Menu:             app.menu,
-		Logger:           log,
-		LogLevel:         logger.INFO,
-		OnStartup:        app.startup,
-		OnDomReady:       app.domReady,
-		OnBeforeClose:    app.beforeClose,
-		OnShutdown:       app.shutdown,
-		WindowStartState: options.Normal,
+		Menu:               app.menu,
+		Logger:             log,
+		LogLevel:           logger.INFO,
+		LogLevelProduction: logger.INFO,
+		OnStartup:          app.startup,
+		OnDomReady:         app.domReady,
+		OnBeforeClose:      app.beforeClose,
+		OnShutdown:         app.shutdown,
+		WindowStartState:   options.Normal,
 		Bind: []interface{}{
 			app,
 		},
@@ -136,6 +137,7 @@ func (a *App) makeMenu() {
 		a.settingsMenu.Append(menu.Text("使用默认缓存文件夹", nil, a.clearCacheFolder))
 	}
 	a.settingsMenu.Append(menu.Radio("从缓存加载图片", a.config.GetUseCache(), nil, a.toggleUseCache))
+	a.settingsMenu.Append(menu.Text("切换服务器", nil, a.switchServer))
 }
 
 func addRadio(label string, selected string, click menu.Callback) *menu.MenuItem {
@@ -209,6 +211,11 @@ func (a *App) toggleUseCache(data *menu.CallbackData) {
 	runtimeWails.MenuSetApplicationMenu(a.ctx, a.menu)
 	runtimeWails.MenuUpdateApplicationMenu(a.ctx)
 
+	// refresh to main screen
+	runtimeWails.WindowReloadApp(a.ctx)
+}
+
+func (a *App) switchServer(_data *menu.CallbackData) {
 	// refresh to main screen
 	runtimeWails.WindowReloadApp(a.ctx)
 }

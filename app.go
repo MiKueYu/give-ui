@@ -4,11 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/a-h/templ"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/wailsapp/wails/v2/pkg/menu"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"net/http"
 	"net/url"
 	"slices"
@@ -24,6 +19,12 @@ import (
 	"spt-give-ui/components"
 	"strconv"
 	"strings"
+
+	"github.com/a-h/templ"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // ctx variables
@@ -133,6 +134,33 @@ func getProfileList(app *App) http.HandlerFunc {
 		}
 		app.ctx = context.WithValue(app.ctx, contextProfiles, profiles)
 		app.ctx = context.WithValue(app.ctx, contextServerInfo, serverInfo)
+
+		templ.Handler(components.ProfileList(app.name, app.version, profiles)).ServeHTTP(w, r)
+	}
+}
+
+func goToProfileList(app *App) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		serverInfo, err := api.ConnectToSptServer(app.config.GetSptUrl())
+		if err != nil {
+			redirectToErrorPage(app, err.Error())
+			return
+		}
+		if serverInfo.ModVersion != app.version {
+			redirectToErrorPage(app, fmt.Sprintf("Wrong server mod version: %s", serverInfo.ModVersion))
+			return
+		}
+
+		profiles, err := api.LoadProfiles(app.config.GetSptUrl())
+		if err != nil {
+			redirectToErrorPage(app, err.Error())
+			return
+		}
+		app.ctx = context.WithValue(app.ctx, contextProfiles, profiles)
+		app.ctx = context.WithValue(app.ctx, contextServerInfo, serverInfo)
+
+		runtime.EventsEmit(app.ctx, "clean_profile")
 
 		templ.Handler(components.ProfileList(app.name, app.version, profiles)).ServeHTTP(w, r)
 	}
@@ -381,7 +409,7 @@ func getFile(app *App) http.HandlerFunc {
 		}
 		image, err := api.LoadFile(app.config.GetSptUrl(), sessionId, imageUrlUnescape)
 		if err != nil {
-			redirectToErrorPage(app, err.Error())
+			runtime.LogWarning(app.ctx, "Couldn't find avatar image for: "+imageUrlUnescape)
 			return
 		}
 		w.Write(image)
@@ -785,6 +813,7 @@ func NewChiRouter(app *App) *chi.Mux {
 	// forward calls to SPT server for files (images)
 	r.Get("/file", getFile(app))
 	r.Get("/linked-search/{id}", getLinkedSearchModal(app))
+	r.Get("/reload-profiles", goToProfileList(app))
 	// this is not used as it is disabled in the template
 	// https://github.com/angel-git/give-ui/issues/49
 	r.Post("/magazine-loadouts/{id}", addMagazineLoadout(app))
