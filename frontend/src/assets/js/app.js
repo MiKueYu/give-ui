@@ -6,7 +6,7 @@ let previousToastElement = null;
 function setUsernameOnFooter() {
     const username = JSON.parse(document.getElementById("profile-selected-username").textContent);
     const el = document.getElementById('profile-selected');
-    el.innerHTML = `<span>: ${username}</span><button class="btn btn-xs btn-link" hx-get="/reload-profiles" hx-target="#main" hx-swap="innerHTML" hx-disabled-elt="this">Switch profile</button>`;
+    el.innerHTML = `<span>: ${username}</span><button class="btn btn-xs btn-link" hx-get="/reload-profiles" hx-target="#main" hx-swap="innerHTML" hx-disabled-elt="this">切换角色档案</button>`;
     window.htmx.process(el);
 }
 

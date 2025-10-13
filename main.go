@@ -111,7 +111,7 @@ func (a *App) makeMenu() {
 		a.menu.Append(menu.EditMenu())
 	}
 	localeFromConfig := a.config.GetLocale()
-	a.localeMenu = a.menu.AddSubmenu("Locale")
+	a.localeMenu = a.menu.AddSubmenu("本地化")
 	a.localeMenu.Append(addRadio("English", localeFromConfig, a.setLocale))
 	a.localeMenu.Append(addRadio("Chinese", localeFromConfig, a.setLocale))
 	a.localeMenu.Append(addRadio("Czech", localeFromConfig, a.setLocale))
@@ -130,15 +130,15 @@ func (a *App) makeMenu() {
 	a.localeMenu.Append(addRadio("Romanian", localeFromConfig, a.setLocale))
 	a.localeMenu.Append(addRadio("Русский", localeFromConfig, a.setLocale))
 
-	a.settingsMenu = a.menu.AddSubmenu("Settings")
+	a.settingsMenu = a.menu.AddSubmenu("设置")
 	if a.config.GetCacheFolder() == "" {
-		a.settingsMenu.Append(menu.Text("Select cache folder", nil, a.selectCacheFolder))
+		a.settingsMenu.Append(menu.Text("选择缓存文件夹", nil, a.selectCacheFolder))
 	} else {
-		a.settingsMenu.Append(menu.Text("Use default cache folder", nil, a.clearCacheFolder))
+		a.settingsMenu.Append(menu.Text("使用默认缓存文件夹", nil, a.clearCacheFolder))
 	}
-	a.settingsMenu.Append(menu.Checkbox("Load images from cache", a.config.GetUseCache(), nil, a.toggleUseCache))
-	a.settingsMenu.Append(menu.Checkbox("Log profiles response", a.config.GetLogResponses(), nil, a.toggleLogResponses))
-	a.settingsMenu.Append(menu.Text("Switch server", nil, a.switchServer))
+	a.settingsMenu.Append(menu.Checkbox("从缓存加载图片", a.config.GetUseCache(), nil, a.toggleUseCache))
+	a.settingsMenu.Append(menu.Checkbox("记录角色档案响应", a.config.GetLogResponses(), nil, a.toggleLogResponses))
+	a.settingsMenu.Append(menu.Text("切换服务器", nil, a.switchServer))
 }
 
 func addRadio(label string, selected string, click menu.Callback) *menu.MenuItem {
@@ -167,18 +167,18 @@ func (a *App) setLocale(data *menu.CallbackData) {
 
 func (a *App) selectCacheFolder(data *menu.CallbackData) {
 	folder, err := runtimeWails.OpenDirectoryDialog(a.ctx, runtimeWails.OpenDialogOptions{
-		Title: "Example c:\\games\\spt\\user\\sptappdata\\live",
+		Title: "示例 c:\\games\\spt\\user\\sptappdata\\live",
 	})
 	if err != nil {
 		runtimeWails.MessageDialog(a.ctx, runtimeWails.MessageDialogOptions{
 			Type:    runtimeWails.ErrorDialog,
-			Title:   "Error",
+			Title:   "错误",
 			Message: err.Error(),
 		})
 		return
 	}
 	a.config.SetCacheFolder(folder)
-	data.MenuItem.Label = "Use default cache folder"
+	data.MenuItem.Label = "使用默认缓存文件夹"
 	data.MenuItem.OnClick(a.clearCacheFolder)
 
 	// refresh menu with the selected locale
@@ -193,7 +193,7 @@ func (a *App) selectCacheFolder(data *menu.CallbackData) {
 func (a *App) clearCacheFolder(data *menu.CallbackData) {
 	a.config.SetCacheFolder("")
 
-	data.MenuItem.Label = "Select cache folder"
+	data.MenuItem.Label = "选择缓存文件夹"
 	data.MenuItem.OnClick(a.selectCacheFolder)
 
 	// refresh menu with the selected locale
